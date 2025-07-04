@@ -11,4 +11,7 @@ public class BaseEntity
     
     [BsonElement("Creeated")]
     public DateTime Created { get; set; }
+
+    [BsonElement("Updated")]
+    public DateTime? Updated { get; set; }
 }

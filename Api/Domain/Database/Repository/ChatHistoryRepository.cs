@@ -6,22 +6,15 @@ using MongoDB.Driver;
 
 namespace Api.Domain.Database.Repository;
 
-public class ChatHistoryRepository : Repository, IChatHistoryRepository
+public class ChatHistoryRepository : Repository<ChatHistoryEntity>, IChatHistoryRepository
 {
-    private readonly IMongoCollection<ChatHistoryEntity> _collection;
-
-    public ChatHistoryRepository(IOptions<MongoSettings> mongoSettings) : base(mongoSettings)
+    public ChatHistoryRepository(IMongoDatabase database) : base(database, "ChatHistory")
     {
-        _collection = Database.GetCollection<ChatHistoryEntity>(nameof(ChatHistoryEntity));
-    }
-
-    public async Task InsertAsync(ChatHistoryEntity history)
-    {
-        await _collection.InsertOneAsync(history);
     }
 
     public async Task<List<ChatHistoryEntity>> GetChatHistoryAsync()
     {
-        return await _collection.Find(_ => true).ToListAsync();
+        var history = await GetAllAsync();
+        return history.ToList();
     }
 }

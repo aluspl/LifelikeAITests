@@ -6,19 +6,38 @@ using MongoDB.Driver;
 
 namespace Api.Domain.Database.Repository;
 
-public class Repository : IRepository
+public class Repository<TEntity> : IRepository<TEntity>
+    where TEntity : BaseEntity
 {
-    protected readonly IMongoDatabase Database;
+    protected readonly IMongoCollection<TEntity> Collection;
 
-    public Repository(IOptions<MongoSettings> mongoSettings)
+    public Repository(IMongoDatabase database, string collectionName)
     {
-        Database = MongoDatabase(mongoSettings);
+        Collection = database.GetCollection<TEntity>(collectionName);
     }
-    
-    protected static IMongoDatabase MongoDatabase(IOptions<MongoSettings> mongoSettings)
+
+    public async Task InsertAsync(TEntity entity)
     {
-        var client = new MongoClient(mongoSettings.Value.ConnectionString);
-        var database = client.GetDatabase(mongoSettings.Value.DatabaseName);
-        return database;
+        await Collection.InsertOneAsync(entity);
+    }
+
+    public async Task<TEntity> GetByIdAsync(string id)
+    {
+        return await Collection.Find(x => x.Id == id).FirstOrDefaultAsync();
+    }
+
+    public async Task<IEnumerable<TEntity>> GetAllAsync()
+    {
+        return await Collection.Find(_ => true).ToListAsync();
+    }
+
+    public async Task UpdateAsync(TEntity entity)
+    {
+        await Collection.ReplaceOneAsync(x => x.Id == entity.Id, entity);
+    }
+
+    public async Task DeleteAsync(string id)
+    {
+        await Collection.DeleteOneAsync(x => x.Id == id);
     }
 }

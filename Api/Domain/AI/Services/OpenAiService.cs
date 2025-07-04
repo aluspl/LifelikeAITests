@@ -7,12 +7,11 @@ using OpenAI.Chat;
 
 namespace Api.Domain.AI.Services;
 
-public class OpenAiService : IOpenAiService
+public class OpenAiService : IAiService
 {
     private readonly OpenAiSettings _settings;
     private AzureOpenAIClient _azureClient;
     private ChatClient _chatClient;
-    private List<ChatMessage> _chatMessages = new();
 
     public OpenAiService(IOptions<OpenAiSettings> settings)
     {
@@ -22,16 +21,18 @@ public class OpenAiService : IOpenAiService
         _chatClient = _azureClient.GetChatClient(_settings.Deployment);
     }
 
-    public async Task<string> Process(string userMessage)
+    public async Task<string> ProcessAsync(string userMessage, string instructions)
     {
+        var chatMessages = new List<ChatMessage>();
+
+        // Add the instructions message to the chat history
+        chatMessages.Add(new SystemChatMessage(instructions));
+        
         // Add the user message to the chat history
-        _chatMessages.Add(new UserChatMessage(userMessage));
+        chatMessages.Add(new UserChatMessage(userMessage));
 
         // Get chat completion
-        ChatCompletion completion = await _chatClient.CompleteChatAsync(_chatMessages);
-
-        // Add the assistant's response to the chat history
-        _chatMessages.Add(new AssistantChatMessage(completion.Content[0].Text));
+        ChatCompletion completion = await _chatClient.CompleteChatAsync(chatMessages);
 
         // Print the response
         Console.WriteLine($"{completion.Role}: {completion.Content[0].Text}");

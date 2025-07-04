@@ -6,36 +6,25 @@ using Api.Domain.Database.Interfaces;
 using Flurl;
 using Flurl.Http;
 using Microsoft.Extensions.Options;
+using Google.Apis.Auth.OAuth2;
 
 namespace Api.Domain.AI.Services;
 
-public class GeminiService(IOptions<GeminiSettings> settings, IChatHistoryRepository chatHistoryRepository) : IGeminiService
+public class GeminiService(IOptions<GeminiSettings> settings) : IAiService
 {
     private readonly GeminiSettings _settings = settings.Value;
 
-    public async Task<string> Process(string userMessage)
+    public async Task<string> ProcessAsync(string userMessage, string instructions)
     {
         try
         {
             // Create user message
-            var userContent = new
-            {
-                contents = new[]
-                {
-                    new
-                    {
-                        parts = new[]
-                        {
-                            new { text = userMessage }
-                        }
-                    }
-                }
-            };
+            var userContent = CreateRequest(userMessage);
 
             // Make API call using Flurl
-            var url = $"https://generativelanguage.googleapis.com/v1beta/models/{_settings.Model}:generateContent";
+            var url = $"https://{_settings.Location}-aiplatform.googleapis.com/v1/projects/{_settings.ProjectId}/locations/{_settings.Location}/publishers/{_settings.Publisher}/models/{_settings.ModelId}:streamGenerateContent";
             var response = await url
-                .SetQueryParam("key", _settings.ApiKey)
+                .WithOAuthBearerToken(await GetAccessToken())
                 .PostJsonAsync(userContent)
                 .ReceiveString();
 
@@ -50,17 +39,6 @@ public class GeminiService(IOptions<GeminiSettings> settings, IChatHistoryReposi
                 throw new Exception("No response received from Gemini API or response is empty");
             }
 
-            // Save chat history to MongoDB
-            var chatHistory = new ChatHistoryEntity
-            {
-                Query = userMessage,
-                Response = assistantResponse,
-                Model = _settings.Model,
-                Created = DateTime.UtcNow,
-                Role = "assistant"
-            };
-            await chatHistoryRepository.InsertAsync(chatHistory);
-
             return $"assistant: {assistantResponse}";
         }
         catch (Exception ex)
@@ -68,5 +46,29 @@ public class GeminiService(IOptions<GeminiSettings> settings, IChatHistoryReposi
             Console.WriteLine($"Error in Gemini service: {ex.Message}");
             return $"Error: {ex.Message}";
         }
+    }
+
+    private static global::System.Object CreateRequest(string userMessage)
+    {
+        return new
+        {
+            contents = new[]
+                        {
+                    new
+                    {
+                        parts = new[]
+                        {
+                            new { text = userMessage }
+                        }
+                    }
+                }
+        };
+    }
+
+    private async Task<string> GetAccessToken()
+    {
+        var credentials = Google.Apis.Auth.OAuth2.GoogleCredential.GetApplicationDefault();
+        var token = await credentials.UnderlyingCredential.GetAccessTokenForRequestAsync();
+        return token;
     }
 }

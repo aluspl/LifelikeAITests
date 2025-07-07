@@ -15,3 +15,6 @@ obj/
 
 # Docker volumes
 mongodb_data/
+
+# IDE-specific files
+.idea/

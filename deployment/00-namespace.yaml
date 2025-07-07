@@ -1,0 +1,5 @@
+# Tworzy dedykowaną przestrzeń nazw, aby odizolować zasoby naszej aplikacji.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ai-agent

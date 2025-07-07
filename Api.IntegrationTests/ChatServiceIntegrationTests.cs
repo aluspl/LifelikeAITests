@@ -1,10 +1,10 @@
-using Api.Domain.AI.Interfaces;
-using Api.Domain.Chat.Enums;
-using Api.Domain.Chat.Interfaces;
-using Api.Domain.Chat.Models;
-using Api.Domain.Database.Entites;
-using Api.Domain.Database.Interfaces;
-using Api.Domain.Instructions.Interfaces;
+using AiAgent.Api.Domain.AI.Interfaces;
+using AiAgent.Api.Domain.Chat.Enums;
+using AiAgent.Api.Domain.Chat.Interfaces;
+using AiAgent.Api.Domain.Chat.Models;
+using AiAgent.Api.Domain.Database.Entites;
+using AiAgent.Api.Domain.Database.Interfaces;
+using AiAgent.Api.Domain.Instructions.Interfaces;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;

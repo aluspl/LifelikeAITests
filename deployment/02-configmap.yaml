@@ -1,0 +1,12 @@
+# Przechowuje konfigurację aplikacji, oddzielając ją od kodu.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: chatgpt-challenge-config
+  namespace: ai-agent
+data:
+  # TODO: Wstaw tutaj swoje wartości konfiguracyjne.
+  GeminiSettings__ProjectId: "twoj-project-id"
+  GeminiSettings__Location: "us-central1"
+  GeminiSettings__Publisher: "google"
+  GeminiSettings__ModelId: "twoj-model-id"

@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: chatgpt-challenge-api
+    container_name: ai-agent-api
     ports:
       - "2137:8080"
     environment:

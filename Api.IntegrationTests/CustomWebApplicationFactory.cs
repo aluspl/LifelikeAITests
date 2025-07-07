@@ -1,11 +1,11 @@
-using Api;
-using Api.Domain.AI.Interfaces;
-using Api.Domain.Chat.Enums;
-using Api.Domain.Chat.Interfaces;
-using Api.Domain.Chat.Services;
-using Api.Domain.Database.Entites;
-using Api.Domain.Database.Interfaces;
-using Api.Domain.Instructions.Interfaces;
+using AiAgent.Api;
+using AiAgent.Api.Domain.AI.Interfaces;
+using AiAgent.Api.Domain.Chat.Enums;
+using AiAgent.Api.Domain.Chat.Interfaces;
+using AiAgent.Api.Domain.Chat.Services;
+using AiAgent.Api.Domain.Database.Entites;
+using AiAgent.Api.Domain.Database.Interfaces;
+using AiAgent.Api.Domain.Instructions.Interfaces;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,7 +14,7 @@ using MongoDB.Driver;
 
 namespace Api.IntegrationTests;
 
-public class CustomWebApplicationFactory : WebApplicationFactory<Program>
+public class CustomWebApplicationFactory : WebApplicationFactory<AiAgent.Api.Program>
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {

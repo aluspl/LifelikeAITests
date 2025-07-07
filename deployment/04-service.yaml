@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ai-agent-service
+  namespace: ai-agent
+spec:
+  # Użycie LoadBalancer automatycznie utworzy zewnętrzny adres IP w chmurze (np. GCP, AWS, Azure).
+  # Dla testów lokalnych (np. Minikube) możesz zmienić na NodePort.
+  type: ClusterIP # Zmieniono na ClusterIP, ponieważ Ingress będzie zarządzał dostępem zewnętrznym
+  selector:
+    # Kieruje ruch do Podów z etykietą app: chatgpt-challenge.
+    app: ai-agent
+  ports:
+  - protocol: TCP
+    port: 80 # Port wewnętrzny, na którym usługa będzie dostępna.
+    targetPort: 80 # Port w kontenerze, do którego kierowany jest ruch.

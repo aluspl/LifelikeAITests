@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ai-agent-deployment
+  namespace: ai-agent
+spec:
+  replicas: 1 # Możesz zwiększyć liczbę replik dla skalowalności.
+  selector:
+    matchLabels:
+      app: ai-agent
+  template:
+    metadata:
+      labels:
+        app: ai-agent
+    spec:
+      containers:
+      - name: ai-agent-container
+        image: aiagent-api:latest
+        ports:
+        - containerPort: 80 # Port, na którym nasłuchuje Twoja aplikacja w kontenerze.
+        env:
+        # Wstrzykiwanie zmiennych środowiskowych z ConfigMap.
+        - name: GeminiSettings__ProjectId
+          valueFrom:
+            configMapKeyRef:
+              name: ai-agent-config
+              key: GeminiSettings__ProjectId
+        - name: GeminiSettings__Location
+          valueFrom:
+            configMapKeyRef:
+              name: ai-agent-config
+              key: GeminiSettings__Location
+        - name: GeminiSettings__Publisher
+          valueFrom:
+            configMapKeyRef:
+              name: ai-agent-config
+              key: GeminiSettings__Publisher
+        - name: GeminiSettings__ModelId
+          valueFrom:
+            configMapKeyRef:
+              name: ai-agent-config
+              key: GeminiSettings__ModelId
+        # Ustawienie zmiennej wskazującej na klucz GSA.
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /var/secrets/google/key.json
+        volumeMounts:
+        - name: gcp-key-volume
+          mountPath: /var/secrets/google
+          readOnly: true
+      volumes:
+      - name: gcp-key-volume
+        secret:
+          secretName: gcp-key

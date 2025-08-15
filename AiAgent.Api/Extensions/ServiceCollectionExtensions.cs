@@ -1,12 +1,11 @@
 using AiAgent.Api.Domain.AI.Interfaces;
 using AiAgent.Api.Domain.AI.Services;
-using AiAgent.Api.Domain.Agents.KillTeam.Interfaces;
-using AiAgent.Api.Domain.Agents.KillTeam.Services;
 using AiAgent.Api.Domain.Chat.Enums;
-using AiAgent.Api.Domain.Chat.Interfaces;
+
+
+
 using AiAgent.Api.Domain.Common.Interfaces;
 using AiAgent.Api.Domain.Common.Services;
-using AiAgent.Api.Domain.Chat.Services;
 using AiAgent.Api.Domain.Configuration;
 using AiAgent.Api.Domain.Database.Interfaces;
 using AiAgent.Api.Domain.Database.Repository;
@@ -45,11 +44,7 @@ public static class ServiceCollectionExtensions
         services.AddKeyedTransient<IAiService, OpenAiService>(nameof(AiProvider.OpenAi).ToLower());
         services.AddKeyedTransient<IAiService, GeminiService>(nameof(AiProvider.Gemini).ToLower());
 
-        services.AddScoped<IChatHistoryRepository, ChatHistoryRepository>(provider =>
-        {
-            var database = provider.GetRequiredService<IMongoDatabase>();
-            return new ChatHistoryRepository(database);
-        });
+        
         services.AddScoped<IInstructionRepository, InstructionRepository>(provider =>
         {
             var database = provider.GetRequiredService<IMongoDatabase>();
@@ -61,6 +56,22 @@ public static class ServiceCollectionExtensions
             var database = provider.GetRequiredService<IMongoDatabase>();
             return new KnowledgeRepository(database);
         });
+        services.AddScoped<IAgentRepository, AgentRepository>(provider =>
+        {
+            var database = provider.GetRequiredService<IMongoDatabase>();
+            return new AgentRepository(database);
+        });
+        services.AddScoped<IExecutionLogRepository, ExecutionLogRepository>(provider =>
+        {
+            var database = provider.GetRequiredService<IMongoDatabase>();
+            return new ExecutionLogRepository(database);
+        });
+
+        services.AddScoped<IAgentStepRepository, AgentStepRepository>(provider =>
+        {
+            var database = provider.GetRequiredService<IMongoDatabase>();
+            return new AgentStepRepository(database);
+        });
 
         services.AddScoped<IApiKeyRepository, ApiKeyRepository>(provider =>
         {
@@ -68,15 +79,21 @@ public static class ServiceCollectionExtensions
             return new ApiKeyRepository(database);
         });
 
-        services.AddScoped<IKillTeamAnalysisService, KillTeamAnalysisService>();
-        services.AddScoped<IDataSeederService, DataSeederService>();
-        services.AddScoped<IDataKnowledgeService, DataKnowledgeService>();
-        services.AddScoped<IAiAnalysisService, AiAnalysisService>();
-        services.AddScoped<IChatService, ChatService>(provider =>
+        services.AddScoped<AiAgent.Api.Domain.Agents.Orchestration.IAgentOrchestratorService, AiAgent.Api.Domain.Agents.Orchestration.AgentOrchestratorService>();
+
+        services.AddScoped<IDataSeederService>(provider =>
         {
-            Func<string, IAiService> aiServiceFactory = key => provider.GetRequiredKeyedService<IAiService>(key);
-            return new ChatService(aiServiceFactory, provider.GetRequiredService<IChatHistoryRepository>(), provider.GetRequiredService<IInstructionService>());
+            return new DataSeederService(
+                provider.GetRequiredService<IKnowledgeRepository>(),
+                provider.GetRequiredService<IApiKeyRepository>(),
+                provider.GetRequiredService<IOptions<ApiKeySettings>>(),
+                provider.GetRequiredService<IInstructionRepository>(),
+                provider.GetRequiredService<IAgentRepository>(),
+                provider.GetRequiredService<IAgentStepRepository>()
+            );
         });
+        services.AddScoped<IDataKnowledgeService, DataKnowledgeService>();
+        
         services.AddScoped<IInstructionService, InstructionService>();
 
         services.AddEndpointsApiExplorer();

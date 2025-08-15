@@ -1,6 +1,9 @@
+using AiAgent.Api.Domain.Chat.Enums;
+
 namespace AiAgent.Api.Domain.AI.Interfaces;
 
 public interface IAiService
 {
-    Task<string> ProcessAsync(string userMessage, string instructions);
+    AiProvider Provider { get; }
+    Task<string> GetChatCompletionAsync(string userMessage, string instructions);
 }

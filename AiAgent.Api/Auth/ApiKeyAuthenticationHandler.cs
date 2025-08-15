@@ -3,22 +3,25 @@ using System.Text.Encodings.Web;
 using AiAgent.Api.Domain.Database.Interfaces;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
+using System;
 
 namespace AiAgent.Api.Auth;
 
 public class ApiKeyAuthenticationHandler : AuthenticationHandler<ApiKeyAuthenticationOptions>
 {
     private readonly IApiKeyRepository _apiKeyRepository;
+    private readonly TimeProvider _timeProvider; // Added
 
     public ApiKeyAuthenticationHandler(
         IOptionsMonitor<ApiKeyAuthenticationOptions> options,
         ILoggerFactory logger,
         UrlEncoder encoder,
-        ISystemClock clock,
+        TimeProvider timeProvider, // Changed
         IApiKeyRepository apiKeyRepository) 
-        : base(options, logger, encoder, clock)
+        : base(options, logger, encoder)
     {
         _apiKeyRepository = apiKeyRepository;
+        _timeProvider = timeProvider; // Assigned
     }
 
     protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
@@ -28,7 +31,7 @@ public class ApiKeyAuthenticationHandler : AuthenticationHandler<ApiKeyAuthentic
             return AuthenticateResult.NoResult();
         }
 
-        string? apiKey = Request.Headers[Options.HeaderName];
+        string apiKey = Request.Headers[Options.HeaderName]!;
 
         if (string.IsNullOrEmpty(apiKey))
         {
@@ -37,7 +40,7 @@ public class ApiKeyAuthenticationHandler : AuthenticationHandler<ApiKeyAuthentic
 
         var existingApiKey = await _apiKeyRepository.GetByKeyAsync(apiKey);
 
-        if (existingApiKey == null || (existingApiKey.Expires.HasValue && existingApiKey.Expires.Value < DateTime.UtcNow))
+        if (existingApiKey == null || (existingApiKey.Expires.HasValue && existingApiKey.Expires.Value < _timeProvider.GetUtcNow().DateTime)) // Changed
         {
             return AuthenticateResult.Fail("Invalid API Key.");
         }

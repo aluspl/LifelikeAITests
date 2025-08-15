@@ -1,8 +1,7 @@
-using AiAgent.Api.Domain.Configuration;
 using AiAgent.Api.Domain.Database.Entites;
 using AiAgent.Api.Domain.Database.Interfaces;
-using Microsoft.Extensions.Options;
 using MongoDB.Driver;
+using System.Linq.Expressions;
 
 namespace AiAgent.Api.Domain.Database.Repository;
 
@@ -39,5 +38,10 @@ public class Repository<TEntity> : IRepository<TEntity>
     public async Task DeleteAsync(string id)
     {
         await Collection.DeleteOneAsync(x => x.Id == id);
+    }
+
+    public async Task<TEntity> GetOneAsync(Expression<Func<TEntity, bool>> filter)
+    {
+        return await Collection.Find(filter).FirstOrDefaultAsync();
     }
 }

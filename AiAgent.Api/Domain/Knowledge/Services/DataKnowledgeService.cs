@@ -1,7 +1,15 @@
 using System.Text.Json;
 using AiAgent.Api.Domain.Database.Entites;
 using AiAgent.Api.Domain.Database.Interfaces;
+using AiAgent.Api.Domain.Knowledge.Enums;
 using AiAgent.Api.Domain.Knowledge.Interfaces;
+using AiAgent.Api.Domain.Knowledge.Models;
+using System.IO;
+using System.Text;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Linq;
+using System;
 
 namespace AiAgent.Api.Domain.Knowledge.Services;
 
@@ -19,7 +27,8 @@ public class DataKnowledgeService : IDataKnowledgeService
         var count = 0;
         using var reader = new StreamReader(fileStream);
 
-        string? line;
+        var knowledgeItems = new List<KnowledgeItem>();
+        string line = null!;
         while ((line = await reader.ReadLineAsync()) != null)
         {
             if (string.IsNullOrWhiteSpace(line))
@@ -27,38 +36,72 @@ public class DataKnowledgeService : IDataKnowledgeService
                 continue;
             }
 
-            var knowledgeDto = JsonSerializer.Deserialize<JsonlDto>(line, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            var jsonlDto = JsonSerializer.Deserialize<JsonlDto>(line, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-            if (knowledgeDto?.Contents != null)
+            if (jsonlDto?.Contents != null)
             {
-                var userContent = knowledgeDto.Contents.FirstOrDefault(c => c.Role == "user");
-                var modelContent = knowledgeDto.Contents.FirstOrDefault(c => c.Role == "model");
+                var userContent = jsonlDto.Contents.FirstOrDefault(c => c.Role == "user");
+                var modelContent = jsonlDto.Contents.FirstOrDefault(c => c.Role == "model");
 
                 if (userContent?.Parts.FirstOrDefault()?.Text != null && modelContent?.Parts.FirstOrDefault()?.Text != null)
                 {
-                    var key = userContent.Parts.First().Text;
-                    var value = modelContent.Parts.First().Text;
-
-                    var entity = new KnowledgeEntity
+                    knowledgeItems.Add(new KnowledgeItem
                     {
-                        Key = key,
-                        Value = value,
-                        Module = moduleString, // Use moduleString directly
-                        Created = DateTime.UtcNow,
-                        Updated = DateTime.UtcNow
-                    };
-
-                    Console.WriteLine($"Upserting Key: {entity.Key}, Module: {entity.Module}");
-                    await _knowledgeRepository.UpsertAsync(entity);
+                        Key = userContent.Parts.First().Text,
+                        Value = modelContent.Parts.First().Text
+                    });
                     count++;
                 }
             }
         }
 
+        if (knowledgeItems.Any())
+        {
+            var knowledgeEntity = new KnowledgeEntity
+            {
+                Key = Guid.NewGuid().ToString(), // Generate a unique key for this collection of items
+                Module = moduleString,
+                SourceType = KnowledgeSourceType.Inline,
+                Items = knowledgeItems,
+                Created = DateTime.UtcNow,
+                Updated = DateTime.UtcNow
+            };
+            await _knowledgeRepository.UpsertAsync(knowledgeEntity);
+        }
+
         return count;
     }
 
-    // A private DTO to represent a line in the jsonl file.
+    public async Task UploadBlobKnowledgeAsync(string key, string module, string blobUrl)
+    {
+        var knowledgeEntity = new KnowledgeEntity
+        {
+            Key = key, // Use Key as the logical key
+            Module = module,
+            SourceType = KnowledgeSourceType.BlobUrl,
+            BlobUrl = blobUrl,
+            Created = DateTime.UtcNow,
+            Updated = DateTime.UtcNow
+        };
+        await _knowledgeRepository.UpsertAsync(knowledgeEntity);
+    }
+
+    public async Task PopulateKnowledgeFromDictionaryAsync(string key, string module, Dictionary<string, string> data)
+    {
+        var knowledgeItems = data.Select(kvp => new KnowledgeItem { Key = kvp.Key, Value = kvp.Value }).ToList();
+
+        var knowledgeEntity = new KnowledgeEntity
+        {
+            Key = key, // Use provided key
+            Module = module,
+            SourceType = KnowledgeSourceType.Inline,
+            Items = knowledgeItems,
+            Created = DateTime.UtcNow,
+            Updated = DateTime.UtcNow
+        };
+        await _knowledgeRepository.UpsertAsync(knowledgeEntity);
+    }
+
     private class JsonlDto
     {
         public List<ContentItem> Contents { get; set; } = new List<ContentItem>();

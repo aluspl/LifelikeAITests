@@ -1,6 +1,4 @@
-﻿using Xunit;
-
-namespace AiAgent.Api.Tests;
+﻿namespace AiAgent.Api.Tests;
 
 public class UnitTest1
 {

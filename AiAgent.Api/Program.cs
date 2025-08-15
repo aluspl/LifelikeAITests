@@ -1,11 +1,6 @@
 using System.Runtime.CompilerServices;
 using AiAgent.Api.Extensions;
-using AiAgent.Api.Domain.Chat.Models;
-using AiAgent.Api.Domain.Chat.Interfaces;
 using AiAgent.Api.Domain.Database.Interfaces;
-using AiAgent.Api.Domain.Instructions.Interfaces;
-using AiAgent.Api.Domain.Instructions.Models;
-using AiAgent.Api.Domain.Agents.KillTeam.Models;
 using AiAgent.Api.Domain.Common.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Scalar.AspNetCore;
@@ -14,7 +9,7 @@ using AiAgent.Api.Domain.Common.Enums;
 using AiAgent.Api.Domain.Knowledge.Interfaces;
 using AiAgent.Api.Middleware;
 using AiAgent.Api.Domain.AI.Interfaces;
-using static AiAgent.Api.Domain.AI.Models.Mapping.ChatHistoryMappingExtensions;
+using AiAgent.Api.Domain.Instructions; // Added
 
 [assembly: InternalsVisibleTo("AiAgent.Api.IntegrationTests")]
 
@@ -31,6 +26,7 @@ public partial class Program
             .AddScheme<ApiKeyAuthenticationOptions, ApiKeyAuthenticationHandler>(
                 ApiKeyAuthenticationOptions.DefaultScheme, options => { });
         builder.Services.AddAuthorization();
+        builder.Services.AddControllers();
 
         var app = builder.Build();
 
@@ -54,93 +50,21 @@ public partial class Program
 
         app.MapHealthChecks("/");
 
-        app.MapPost("/chat", async ([FromBody] ChatRequest request, IChatService chatService) =>
-        {
-            var response = await chatService.ProcessAsync(request);
-            return Results.Ok(response);
-        });
+        // Map domain-specific endpoints
+        app.MapInstructionsEndpoints(); // Moved to Instructions domain
 
-        app.MapGet("/chat/history", async (IChatHistoryRepository repository) =>
-        {
-            var history = await repository.GetChatHistoryAsync();
-            return history.ToResponse();
-        });
+        // Knowledge endpoints are now handled by KnowledgeController
+        // app.MapPost("/knowledge/upload", ...)
+        // app.MapGet("/knowledge/get/{key}/{module}", ...)
+        // app.MapGet("/knowledge/all/{module}", ...)
 
-        app.MapGet("/instructions/{module}", async (string module, IInstructionService instructionService) =>
-        {
-            var instruction = await instructionService.GetInstructionAsync(module);
-            return Results.Ok(instruction);
-        });
-
-        app.MapPost("/instructions", async ([FromBody] InstructionRequest request, IInstructionService instructionService) =>
-        {
-            var result = await instructionService.UpsertInstructionAsync(request);
-            return Results.Ok(result);
-        });
-
-        app.MapPost("/agents/killteam/analyze", async ([FromBody] KillTeamAnalysisRequest request, IAiAnalysisService aiAnalysisService) =>
-        {
-            var response = await aiAnalysisService.AnalyzeKillTeamsAsync(request.Team1Name, request.Team2Name, request.Language);
-            return Results.Ok(response);
-        });
-
-        app.MapPost("/knowledge/upload", async (HttpRequest request, IDataKnowledgeService dataKnowledgeService) =>
-        {
-            var moduleString = request.Query["module"];
-            if (!request.HasFormContentType)
-            {
-                return Results.BadRequest("Request must be multipart/form-data.");
-            }
-
-            var form = await request.ReadFormAsync();
-            var file = form.Files["file"]; // Assuming the file input name is "file"
-
-            if (file == null || file.Length == 0)
-            {
-                return Results.BadRequest("No file uploaded.");
-            }
-
-            if (Path.GetExtension(file.FileName).ToLower() != ".jsonl")
-            {
-                return Results.BadRequest("Invalid file type. Please upload a .jsonl file.");
-            }
-
-            if (!Enum.TryParse(moduleString, true, out ModuleType module))
-            {
-                return Results.BadRequest($"Invalid module specified: {moduleString}. Valid modules are: {string.Join(", ", Enum.GetNames(typeof(ModuleType)))}");
-            }
-
-            // Pass the file stream directly
-            var count = await dataKnowledgeService.UploadKnowledgeDataAsync(file.OpenReadStream(), moduleString);
-            return Results.Ok($"Successfully seeded {count} knowledge entries for module {moduleString}.");
-        }).Accepts<IFormFile>("multipart/form-data");
-
-        app.MapGet("/knowledge/get/{key}/{module}", async (string key, string module, IKnowledgeRepository knowledgeRepository) =>
-        {
-            var entity = await knowledgeRepository.GetByKeyAndModuleAsync(key, module);
-            if (entity == null)
-            {
-                return Results.NotFound($"Knowledge entry not found for key '{key}' and module '{module}'.");
-            }
-            return Results.Ok(entity);
-        });
-
-        app.MapGet("/knowledge/all/{module}", async (string module, IKnowledgeRepository knowledgeRepository) =>
-        {
-            var entities = await knowledgeRepository.GetAllByModuleAsync(module);
-
-            if (!entities.Any())
-            {
-                return Results.NotFound($"No knowledge entries found for module '{module}'.");
-            }
-            return Results.Ok(entities);
-        });
+        app.MapControllers();
 
         // Seed initial API keys
         using (var scope = app.Services.CreateScope())
         {
             var seeder = scope.ServiceProvider.GetRequiredService<IDataSeederService>();
-            await seeder.SeedApiKeysAsync();
+            await seeder.SeedAllDataAsync();
         }
 
         app.Run();

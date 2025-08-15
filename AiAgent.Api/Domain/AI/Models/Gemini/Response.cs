@@ -1,5 +1,3 @@
-using AiAgent.Api.Domain.AI.Models;
-
 using System.Text.Json.Serialization;
 
 public class GeminiResponse

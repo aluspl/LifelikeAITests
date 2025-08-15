@@ -11,6 +11,7 @@ services:
       - MongoDB__ConnectionString=mongodb://${MONGO_ROOT_USERNAME}:${MONGO_ROOT_PASSWORD}@mongodb:27017
       - AI__OpenAI__ApiKey=${OPENAI_API_KEY}
       - AI__Gemini__ApiKey=${GEMINI_API_KEY}
+      - AI__Gemini__ModelId=gemini-1.5-flash
     depends_on:
       - mongodb
     networks:

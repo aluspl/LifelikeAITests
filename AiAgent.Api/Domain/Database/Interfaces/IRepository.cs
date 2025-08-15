@@ -1,4 +1,5 @@
 using AiAgent.Api.Domain.Database.Entites;
+using System.Linq.Expressions;
 
 namespace AiAgent.Api.Domain.Database.Interfaces;
 
@@ -10,4 +11,5 @@ public interface IRepository<TEntity>
     Task<IEnumerable<TEntity>> GetAllAsync();
     Task UpdateAsync(TEntity entity);
     Task DeleteAsync(string id);
+    Task<TEntity> GetOneAsync(Expression<Func<TEntity, bool>> filter);
 }

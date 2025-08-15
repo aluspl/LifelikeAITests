@@ -9,7 +9,10 @@ public class BaseEntity
     [BsonRepresentation(BsonType.ObjectId)]
     public string Id { get; set; }
     
-    [BsonElement("Creeated")]
+    [BsonElement("key")] // Restored
+    public string Key { get; set; } // Restored
+
+    [BsonElement("Created")]
     public DateTime Created { get; set; }
 
     [BsonElement("Updated")]

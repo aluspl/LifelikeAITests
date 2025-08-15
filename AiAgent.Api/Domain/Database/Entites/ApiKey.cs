@@ -11,10 +11,6 @@ public class ApiKey : BaseEntity
     [BsonElement("owner")]
     public string Owner { get; set; } = string.Empty;
 
-    [BsonElement("created")]
-    [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
-    public DateTime Created { get; set; } = DateTime.UtcNow;
-
     [BsonElement("expires")]
     [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
     public DateTime? Expires { get; set; }

@@ -4,6 +4,7 @@ using Azure;
 using Azure.AI.OpenAI;
 using Microsoft.Extensions.Options;
 using OpenAI.Chat;
+using AiAgent.Api.Domain.Chat.Enums;
 
 namespace AiAgent.Api.Domain.AI.Services;
 
@@ -13,6 +14,8 @@ public class OpenAiService : IAiService
     private AzureOpenAIClient _azureClient;
     private ChatClient _chatClient;
 
+    public AiProvider Provider => AiProvider.OpenAi;
+
     public OpenAiService(IOptions<OpenAiSettings> settings)
     {
         _settings = settings.Value;
@@ -21,7 +24,7 @@ public class OpenAiService : IAiService
         _chatClient = _azureClient.GetChatClient(_settings.Deployment);
     }
 
-    public async Task<string> ProcessAsync(string userMessage, string instructions)
+    public async Task<string> GetChatCompletionAsync(string userMessage, string instructions)
     {
         var chatMessages = new List<ChatMessage>();
 

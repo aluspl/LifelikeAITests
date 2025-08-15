@@ -4,5 +4,5 @@ namespace AiAgent.Api.Domain.Database.Interfaces;
 
 public interface IApiKeyRepository : IRepository<ApiKey>
 {
-    Task<ApiKey?> GetByKeyAsync(string key);
+    Task<ApiKey> GetByKeyAsync(string key);
 }

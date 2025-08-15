@@ -1,12 +1,10 @@
 using System.Text.Json;
 using AiAgent.Api.Domain.AI.Interfaces;
 using AiAgent.Api.Domain.Configuration;
-using AiAgent.Api.Domain.Database.Entites;
-using AiAgent.Api.Domain.Database.Interfaces;
-using Flurl;
 using Flurl.Http;
 using Microsoft.Extensions.Options;
-using Google.Apis.Auth.OAuth2;
+using Flurl;
+using AiAgent.Api.Domain.Chat.Enums;
 
 namespace AiAgent.Api.Domain.AI.Services;
 
@@ -14,7 +12,9 @@ public class GeminiService(IOptions<GeminiSettings> settings) : IAiService
 {
     private readonly GeminiSettings _settings = settings.Value;
 
-    public async Task<string> ProcessAsync(string userMessage, string instructions)
+    public AiProvider Provider => AiProvider.Gemini;
+
+    public async Task<string> GetChatCompletionAsync(string userMessage, string instructions)
     {
         try
         {
@@ -22,9 +22,9 @@ public class GeminiService(IOptions<GeminiSettings> settings) : IAiService
             var userContent = CreateRequest(userMessage);
 
             // Make API call using Flurl
-            var url = $"https://{_settings.Location}-aiplatform.googleapis.com/v1/projects/{_settings.ProjectId}/locations/{_settings.Location}/publishers/{_settings.Publisher}/models/{_settings.ModelId}:streamGenerateContent";
+            var url = $"https://generativelanguage.googleapis.com/v1beta/models/{_settings.ModelId}:generateContent";
             var response = await url
-                .WithOAuthBearerToken(await GetAccessToken())
+                .SetQueryParam("key", _settings.ApiKey)
                 .PostJsonAsync(userContent)
                 .ReceiveString();
 
@@ -48,27 +48,20 @@ public class GeminiService(IOptions<GeminiSettings> settings) : IAiService
         }
     }
 
-    private static global::System.Object CreateRequest(string userMessage)
+    private static object CreateRequest(string userMessage)
     {
         return new
         {
             contents = new[]
-                        {
-                    new
+            {
+                new
+                {
+                    parts = new[]
                     {
-                        parts = new[]
-                        {
-                            new { text = userMessage }
-                        }
+                        new { text = userMessage }
                     }
                 }
+            }
         };
-    }
-
-    private async Task<string> GetAccessToken()
-    {
-        var credentials = Google.Apis.Auth.OAuth2.GoogleCredential.GetApplicationDefault();
-        var token = await credentials.UnderlyingCredential.GetAccessTokenForRequestAsync();
-        return token;
     }
 }

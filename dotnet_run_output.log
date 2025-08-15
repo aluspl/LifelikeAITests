@@ -1,0 +1,35 @@
+Używanie ustawień uruchamiania z profilu AiAgent.Api/Properties/launchSettings.json...
+Trwa kompilowanie...
+/Users/szymonmotyka/Dev/AI/ChatGPTChallenge/AiAgent.Api/Auth/ApiKeyAuthenticationHandler.cs(18,9): warning CS0618: 'Element „ISystemClock” jest przestarzały: „Use TimeProvider instead.” [/Users/szymonmotyka/Dev/AI/ChatGPTChallenge/AiAgent.Api/AiAgent.Api.csproj]
+/Users/szymonmotyka/Dev/AI/ChatGPTChallenge/AiAgent.Api/Auth/ApiKeyAuthenticationHandler.cs(20,9): warning CS0618: 'Element „AuthenticationHandler<ApiKeyAuthenticationOptions>.AuthenticationHandler(IOptionsMonitor<ApiKeyAuthenticationOptions>, ILoggerFactory, UrlEncoder, ISystemClock)” jest przestarzały: „ISystemClock is obsolete, use TimeProvider on AuthenticationSchemeOptions instead.” [/Users/szymonmotyka/Dev/AI/ChatGPTChallenge/AiAgent.Api/AiAgent.Api.csproj]
+/Users/szymonmotyka/Dev/AI/ChatGPTChallenge/AiAgent.Api/Auth/ApiKeyAuthenticationHandler.cs(32,15): warning CS8632: Adnotacja dla typów referencyjnych dopuszczających wartość null powinna być używana tylko w kodzie z kontekstem adnotacji „#nullable”. [/Users/szymonmotyka/Dev/AI/ChatGPTChallenge/AiAgent.Api/AiAgent.Api.csproj]
+/Users/szymonmotyka/Dev/AI/ChatGPTChallenge/AiAgent.Api/Domain/Knowledge/Services/DataKnowledgeService.cs(22,15): warning CS8632: Adnotacja dla typów referencyjnych dopuszczających wartość null powinna być używana tylko w kodzie z kontekstem adnotacji „#nullable”. [/Users/szymonmotyka/Dev/AI/ChatGPTChallenge/AiAgent.Api/AiAgent.Api.csproj]
+Unhandled exception. System.TimeoutException: A timeout occurred after 30000ms selecting a server using CompositeServerSelector{ Selectors = ReadPreferenceServerSelector{ ReadPreference = { Mode : Primary } }, LatencyLimitingServerSelector{ AllowedLatencyRange = 00:00:00.0150000 }, OperationsCountServerSelector }. Client view of cluster state is { ClusterId : "1", Type : "Unknown", State : "Disconnected", Servers : [{ ServerId: "{ ClusterId : 1, EndPoint : "Unspecified/mongodb:27017" }", EndPoint: "Unspecified/mongodb:27017", ReasonChanged: "Heartbeat", State: "Disconnected", ServerVersion: , TopologyVersion: , Type: "Unknown", HeartbeatException: "MongoDB.Driver.MongoConnectionException: An exception occurred while opening a connection to the server.
+ ---> System.Net.Sockets.SocketException (00000005, 0xFFFDFFFF): nodename nor servname provided, or not known
+   at System.Net.Dns.GetHostEntryOrAddressesCore(String hostName, Boolean justAddresses, AddressFamily addressFamily, Nullable`1 activityOrDefault)
+   at System.Net.Dns.GetHostAddresses(String hostNameOrAddress, AddressFamily family)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.ResolveEndPoints(EndPoint initial)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.CreateStream(EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.Open(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.InitializeConnection(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.Heartbeat(CancellationToken cancellationToken)", LastHeartbeatTimestamp: "2025-08-15T17:17:22.4895570Z", LastUpdateTimestamp: "2025-08-15T17:17:22.4895580Z" }] }.
+   at MongoDB.Driver.Core.Clusters.Cluster.ThrowTimeoutException(IServerSelector selector, ClusterDescription description)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedAsync(IServerSelector selector, ClusterDescription description, Task descriptionChangedTask, TimeSpan timeout, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.Cluster.SelectServerAsync(IServerSelector selector, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.IClusterExtensions.SelectServerAndPinIfNeededAsync(IClusterInternal cluster, ICoreSessionHandle session, IServerSelector selector, IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Bindings.ReadPreferenceBinding.GetReadChannelSourceAsync(IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.RetryableReadContext.InitializeAsync(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.RetryableReadContext.CreateAsync(IReadBinding binding, Boolean retryRequested, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.FindOperation`1.ExecuteAsync(IReadBinding binding, CancellationToken cancellationToken)
+   at MongoDB.Driver.OperationExecutor.ExecuteReadOperationAsync[TResult](IReadBinding binding, IReadOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoCollectionImpl`1.ExecuteReadOperationAsync[TResult](IClientSessionHandle session, IReadOperation`1 operation, ReadPreference readPreference, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoCollectionImpl`1.UsingImplicitSessionAsync[TResult](Func`2 funcAsync, CancellationToken cancellationToken)
+   at MongoDB.Driver.IAsyncCursorSourceExtensions.FirstOrDefaultAsync[TDocument](IAsyncCursorSource`1 source, CancellationToken cancellationToken)
+   at AiAgent.Api.Domain.Database.Repository.ApiKeyRepository.GetByKeyAsync(String key) in /Users/szymonmotyka/Dev/AI/ChatGPTChallenge/AiAgent.Api/Domain/Database/Repository/ApiKeyRepository.cs:line 15
+   at AiAgent.Api.Domain.Common.Services.DataSeederService.SeedApiKeysAsync() in /Users/szymonmotyka/Dev/AI/ChatGPTChallenge/AiAgent.Api/Domain/Common/Services/DataSeederService.cs:line 38
+   at AiAgent.Api.Domain.Common.Services.DataSeederService.SeedAllDataAsync() in /Users/szymonmotyka/Dev/AI/ChatGPTChallenge/AiAgent.Api/Domain/Common/Services/DataSeederService.cs:line 32
+   at AiAgent.Api.Program.Main(String[] args) in /Users/szymonmotyka/Dev/AI/ChatGPTChallenge/AiAgent.Api/Program.cs:line 146
+   at AiAgent.Api.Program.<Main>(String[] args)

@@ -10,7 +10,7 @@ public class ApiKeyRepository : Repository<ApiKey>, IApiKeyRepository
     {
     }
 
-    public async Task<ApiKey?> GetByKeyAsync(string key)
+    public async Task<ApiKey> GetByKeyAsync(string key)
     {
         return await Collection.Find(x => x.Key == key).FirstOrDefaultAsync();
     }

@@ -1,109 +1,97 @@
 using AiAgent.Api;
 using AiAgent.Api.Domain.AI.Interfaces;
-using AiAgent.Api.Domain.Chat.Enums;
-using AiAgent.Api.Domain.Chat.Interfaces;
-using AiAgent.Api.Domain.Chat.Services;
-using AiAgent.Api.Domain.Database.Entites;
+using AiAgent.Api.Domain.AI.Services;
+using AiAgent.Api.Domain.Agents.Orchestration;
+using AiAgent.Api.Domain.Common.Interfaces;
 using AiAgent.Api.Domain.Database.Interfaces;
 using AiAgent.Api.Domain.Instructions.Interfaces;
+using AiAgent.Api.Domain.Instructions.Services;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using MongoDB.Driver;
+using System.Threading.Tasks;
 
 namespace Api.IntegrationTests;
 
 public class CustomWebApplicationFactory : WebApplicationFactory<AiAgent.Api.Program>
 {
+    public Mock<IAgentOrchestratorService> AgentOrchestratorServiceMock { get; }
+    public Mock<IKnowledgeRepository> KnowledgeRepositoryMock { get; }
+    public Mock<IAgentRepository> AgentRepositoryMock { get; }
+    public Mock<IAgentStepRepository> AgentStepRepositoryMock { get; }
+    public Mock<IInstructionRepository> InstructionRepositoryMock { get; }
+    public Mock<IAiService> AiServiceGeminiMock { get; }
+    public Mock<IInstructionService> InstructionServiceMock { get; } // Added
+
+    public CustomWebApplicationFactory()
+    {
+        AgentOrchestratorServiceMock = new Mock<IAgentOrchestratorService>();
+        KnowledgeRepositoryMock = new Mock<IKnowledgeRepository>();
+        AgentRepositoryMock = new Mock<IAgentRepository>();
+        AgentStepRepositoryMock = new Mock<IAgentStepRepository>();
+        InstructionRepositoryMock = new Mock<IInstructionRepository>();
+        AiServiceGeminiMock = new Mock<IAiService>();
+        InstructionServiceMock = new Mock<IInstructionService>(); // Initialized
+    }
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.ConfigureServices(services =>
         {
-            // Remove existing IAiService registrations
-            var aiServiceDescriptors = services.Where(descriptor =>
-                descriptor.ServiceType == typeof(IAiService)).ToList();
-            foreach (var descriptor in aiServiceDescriptors)
+            // Remove all services that will be replaced by mocks or test-specific implementations
+            var servicesToRemove = services.Where(d => 
+                d.ServiceType.Name.EndsWith("Repository") || 
+                d.ServiceType == typeof(IMongoClient) ||
+                d.ServiceType == typeof(IMongoDatabase) ||
+                d.ServiceType == typeof(IDataSeederService) ||
+                d.ServiceType == typeof(IAgentOrchestratorService) ||
+                d.ServiceType == typeof(IAiService) || 
+                d.ServiceType == typeof(IInstructionService) 
+            ).ToList();
+
+            foreach (var descriptor in servicesToRemove)
             {
                 services.Remove(descriptor);
             }
 
-            // Remove existing IChatHistoryRepository and IInstructionService registrations
-            var chatHistoryRepositoryDescriptor = services.SingleOrDefault(
-                d => d.ServiceType == typeof(IChatHistoryRepository));
-            if (chatHistoryRepositoryDescriptor != null)
-            {
-                services.Remove(chatHistoryRepositoryDescriptor);
-            }
+            // --- Register Mocks and Test Implementations ---
 
-            var instructionServiceDescriptor = services.SingleOrDefault(
-                d => d.ServiceType == typeof(IInstructionService));
-            if (instructionServiceDescriptor != null)
-            {
-                services.Remove(instructionServiceDescriptor);
-            }
+            // 1. Use the empty seeder for tests
+            services.AddScoped<IDataSeederService, TestScopedDataSeeder>();
 
-            // Remove existing IMongoClient and IMongoDatabase registrations
-            var mongoClientDescriptor = services.SingleOrDefault(
-                d => d.ServiceType == typeof(IMongoClient));
-            if (mongoClientDescriptor != null)
-            {
-                services.Remove(mongoClientDescriptor);
-            }
-
-            var mongoDatabaseDescriptor = services.SingleOrDefault(
-                d => d.ServiceType == typeof(IMongoDatabase));
-            if (mongoDatabaseDescriptor != null)
-            {
-                services.Remove(mongoDatabaseDescriptor);
-            }
-
-            // Add our mocked IAiService
-            var mockAiService = new Mock<IAiService>();
-            mockAiService.Setup(s => s.ProcessAsync(It.IsAny<string>(), It.IsAny<string>()))
-                         .ReturnsAsync("Mocked AI Response");
-
-            services.AddKeyedTransient<IAiService, IAiService>(
-                AiProvider.Gemini.ToString().ToLower(),
-                (sp, key) => mockAiService.Object);
-            services.AddKeyedTransient<IAiService, IAiService>(
-                AiProvider.OpenAi.ToString().ToLower(),
-                (sp, key) => mockAiService.Object);
-
-            // Add our mocked IMongoClient and IMongoDatabase
+            // 2. Mock the entire database layer
             var mockMongoClient = new Mock<IMongoClient>();
             var mockMongoDatabase = new Mock<IMongoDatabase>();
-            var mockChatHistoryCollection = new Mock<IMongoCollection<ChatHistoryEntity>>();
-            var mockInstructionCollection = new Mock<IMongoCollection<InstructionEntity>>();
+            mockMongoClient.Setup(c => c.GetDatabase(It.IsAny<string>(), null)).Returns(mockMongoDatabase.Object);
+            services.AddSingleton<IMongoClient>(mockMongoClient.Object);
+            services.AddSingleton<IMongoDatabase>(mockMongoDatabase.Object);
 
-            mockMongoClient.Setup(client => client.GetDatabase(It.IsAny<string>(), null))
-                           .Returns(mockMongoDatabase.Object);
-            mockMongoDatabase.Setup(db => db.GetCollection<ChatHistoryEntity>(It.IsAny<string>(), null))
-                             .Returns(mockChatHistoryCollection.Object);
-            mockMongoDatabase.Setup(db => db.GetCollection<InstructionEntity>(It.IsAny<string>(), null))
-                             .Returns(mockInstructionCollection.Object);
+            // 3. Mock all repositories
+            services.AddScoped<IInstructionRepository>(_ => InstructionRepositoryMock.Object);
+            services.AddScoped<IKnowledgeRepository>(_ => KnowledgeRepositoryMock.Object);
+            services.AddScoped<IAgentRepository>(_ => AgentRepositoryMock.Object);
+            services.AddScoped<IExecutionLogRepository>(_ => new Mock<IExecutionLogRepository>().Object);
+            services.AddScoped<IApiKeyRepository>(_ => new Mock<IApiKeyRepository>().Object);
+            services.AddScoped<IAgentStepRepository>(_ => AgentStepRepositoryMock.Object);
 
-            mockChatHistoryCollection.Setup(c => c.InsertOneAsync(It.IsAny<ChatHistoryEntity>(), null, CancellationToken.None))
-                                     .Returns(Task.CompletedTask);
-            mockInstructionCollection.Setup(c => c.InsertOneAsync(It.IsAny<InstructionEntity>(), null, CancellationToken.None))
-                                     .Returns(Task.CompletedTask);
-
-            services.AddSingleton<IMongoClient>(_ => mockMongoClient.Object);
-            services.AddSingleton<IMongoDatabase>(_ => mockMongoDatabase.Object);
-
-            // Add our mocked IChatHistoryRepository and IInstructionService
-            var mockChatHistoryRepository = new Mock<IChatHistoryRepository>();
-            var mockInstructionService = new Mock<IInstructionService>();
-
-            services.AddScoped<IChatHistoryRepository>(_ => mockChatHistoryRepository.Object);
-            services.AddScoped<IInstructionService>(_ => mockInstructionService.Object);
-
-            // Register ChatService with mocked dependencies
-            services.AddScoped<IChatService, ChatService>(provider =>
-            {
-                Func<string, IAiService> aiServiceFactory = key => provider.GetRequiredKeyedService<IAiService>(key);
-                return new ChatService(aiServiceFactory, provider.GetRequiredService<IChatHistoryRepository>(), provider.GetRequiredService<IInstructionService>());
-            });
+            // 4. Mock high-level services used in tests
+            services.AddScoped<IAgentOrchestratorService>(_ => AgentOrchestratorServiceMock.Object);
+            services.AddScoped<IAiService>(_ => new MockAiService()); // Direct implementation
+            // Removed OpenAiService registration as it's not used in current tests
+            services.AddScoped<IInstructionService>(_ => InstructionServiceMock.Object); // Changed to use InstructionServiceMock
         });
+    }
+
+    // Simple mock AI service implementation
+    private class MockAiService : IAiService
+    {
+        public AiAgent.Api.Domain.Chat.Enums.AiProvider Provider => AiAgent.Api.Domain.Chat.Enums.AiProvider.Gemini;
+
+        public Task<string> GetChatCompletionAsync(string userMessage, string instructions)
+        {
+            return Task.FromResult("{\"content\":\"AI processed result\"}");
+        }
     }
 }

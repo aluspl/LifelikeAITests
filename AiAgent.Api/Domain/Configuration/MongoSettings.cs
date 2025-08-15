@@ -1,5 +1,3 @@
-using MongoDB.Driver;
-
 namespace AiAgent.Api.Domain.Configuration;
 
 public class MongoSettings

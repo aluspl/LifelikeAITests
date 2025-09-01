@@ -9,7 +9,7 @@ public static class StepCacheEndpoints
 {
     public static void MapStepCacheEndpoints(this IEndpointRouteBuilder routes)
     {
-        var group = routes.MapGroup("/api/step-cache");
+        var group = routes.MapGroup("/step-cache");
 
         group.MapGet("/{agentId:guid}", async (Guid agentId, IMediator mediator) =>
         {

@@ -12,7 +12,7 @@ public static class AgentStepsEndpoints
 {
     public static void MapAgentStepsEndpoints(this IEndpointRouteBuilder routes)
     {
-        var group = routes.MapGroup("/api/agent-steps");
+        var group = routes.MapGroup("/agent-steps");
 
         group.MapGet("/", async (IMediator mediator) =>
         {

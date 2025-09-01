@@ -10,7 +10,7 @@ public static class KnowledgeEndpoints
 {
     public static void MapKnowledgeEndpoints(this IEndpointRouteBuilder routes)
     {
-        var group = routes.MapGroup("/api/knowledge");
+        var group = routes.MapGroup("/knowledge");
 
         group.MapGet("/", async (IMediator mediator) =>
         {

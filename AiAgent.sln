@@ -5,9 +5,11 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AiAgent.Api", "AiAgent.Api\AiAgent.Api.csproj", "{B6E5601F-00B4-4E9F-8CC2-BB44743AF388}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AiAgent.Api.Tests", "AiAgent.Api.Tests\AiAgent.Api.Tests.csproj", "{ADBAA81F-510F-4535-AC0D-B130ADFFBBC7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AiAgent.Api.Tests", "Tests\AiAgent.Api.Tests\AiAgent.Api.Tests.csproj", "{ADBAA81F-510F-4535-AC0D-B130ADFFBBC7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Api.IntegrationTests", "Api.IntegrationTests\Api.IntegrationTests.csproj", "{64B160BF-F3AC-4EA7-B6D4-2304F7AD30A7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AiAgent.Api.IntegrationTests", "Tests\AiAgent.Api.IntegrationTests\AiAgent.Api.IntegrationTests.csproj", "{64B160BF-F3AC-4EA7-B6D4-2304F7AD30A7}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{28834855-324F-499B-B01F-33270B60B937}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -58,5 +60,9 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{64B160BF-F3AC-4EA7-B6D4-2304F7AD30A7} = {28834855-324F-499B-B01F-33270B60B937}
+		{ADBAA81F-510F-4535-AC0D-B130ADFFBBC7} = {28834855-324F-499B-B01F-33270B60B937}
 	EndGlobalSection
 EndGlobal

@@ -1,6 +1,4 @@
-using Xunit;
 using Moq;
-using System.Threading.Tasks;
 using AiAgent.Api.Domain.Agents.Commands;
 using AiAgent.Api.Domain.Agents.CommandHandlers;
 using AiAgent.Api.Domain.Database.Interfaces;

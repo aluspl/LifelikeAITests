@@ -5,6 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
     <IsPackable>false</IsPackable>
+    <RootNamespace>Api.IntegrationTests</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,6 +15,7 @@
     <PackageReference Include="Moq" Version="4.20.72" />
     <PackageReference Include="xunit" Version="2.9.2" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+    <PackageReference Include="Testcontainers.MongoDB" Version="3.8.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -21,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AiAgent.Api\AiAgent.Api.csproj" />
+      <ProjectReference Include="..\..\AiAgent.Api\AiAgent.Api.csproj" />
   </ItemGroup>
 
 </Project>

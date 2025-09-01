@@ -15,8 +15,7 @@ public class DataKnowledgeService(IKnowledgeRepository knowledgeRepository) : ID
         using var reader = new StreamReader(fileStream);
 
         var knowledgeItems = new List<KnowledgeItem>();
-        string line = null!;
-        while ((line = await reader.ReadLineAsync()) != null)
+        while (await reader.ReadLineAsync() is { } line)
         {
             if (string.IsNullOrWhiteSpace(line))
             {
@@ -25,36 +24,34 @@ public class DataKnowledgeService(IKnowledgeRepository knowledgeRepository) : ID
 
             var jsonlDto = JsonSerializer.Deserialize<JsonlDto>(line, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-            if (jsonlDto?.Contents != null)
-            {
-                var userContent = jsonlDto.Contents.FirstOrDefault(c => c.Role == "user");
-                var modelContent = jsonlDto.Contents.FirstOrDefault(c => c.Role == "model");
+            if (jsonlDto?.Contents == null) continue;
+            var userContent = jsonlDto.Contents.FirstOrDefault(c => c.Role == "user");
+            var modelContent = jsonlDto.Contents.FirstOrDefault(c => c.Role == "model");
 
-                if (userContent?.Parts.FirstOrDefault()?.Text != null && modelContent?.Parts.FirstOrDefault()?.Text != null)
-                {
-                    knowledgeItems.Add(new KnowledgeItem
-                    {
-                        Key = userContent.Parts.First().Text,
-                        Value = modelContent.Parts.First().Text
-                    });
-                    count++;
-                }
-            }
+            if (userContent?.Parts.FirstOrDefault()?.Text == null ||
+                modelContent?.Parts.FirstOrDefault()?.Text == null) continue;
+            knowledgeItems.Add(new KnowledgeItem
+            {
+                Key = userContent.Parts.First().Text,
+                Value = modelContent.Parts.First().Text
+            });
+            count++;
         }
 
-        if (knowledgeItems.Any())
+        if (!knowledgeItems.Any())
         {
-            var knowledgeEntity = new KnowledgeEntity
-            {
-                Key = Guid.NewGuid().ToString(), // Generate a unique key for this collection of items
-                Module = moduleString,
-                SourceType = KnowledgeSourceType.Inline,
-                Items = knowledgeItems,
-                Created = DateTime.UtcNow,
-                Updated = DateTime.UtcNow
-            };
-            await knowledgeRepository.UpsertAsync(knowledgeEntity);
+            return count;
         }
+        var knowledgeEntity = new KnowledgeEntity
+        {
+            Key = Guid.NewGuid().ToString(), // Generate a unique key for this collection of items
+            Module = moduleString,
+            SourceType = KnowledgeSourceType.Inline,
+            Items = knowledgeItems,
+            Created = DateTime.UtcNow,
+            Updated = DateTime.UtcNow
+        };
+        await knowledgeRepository.UpsertAsync(knowledgeEntity);
 
         return count;
     }

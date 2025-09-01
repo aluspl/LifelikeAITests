@@ -3,7 +3,7 @@ using AiAgent.Api.Domain.Knowledge.Models;
 
 namespace AiAgent.Api.Domain.Knowledge.Commands;
 
-public class CreateKnowledgeCommand : ICommand<Guid>
+public class CreateKnowledgeCommand : ICommand
 {
     public CreateKnowledgeRequest Request { get; set; }
 }

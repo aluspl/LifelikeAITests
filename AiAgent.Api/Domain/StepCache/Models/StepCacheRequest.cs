@@ -1,8 +1,8 @@
 namespace AiAgent.Api.Domain.StepCache.Models;
 
-public class InstructionRequest
+public class StepCacheRequest
 {
-    public Guid AgentId { get; set; }
+    public Guid AgentStepId { get; set; }
     public string Query { get; set; }
-    public string Content { get; set; }
+    public string Value { get; set; }
 }

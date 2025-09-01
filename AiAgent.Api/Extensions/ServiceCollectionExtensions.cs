@@ -5,15 +5,25 @@ using AiAgent.Api.Domain.Configuration;
 using AiAgent.Api.Domain.Database.Interfaces;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
+using MongoDB.Bson.Serialization.Serializers;
 using System.Text.Json.Serialization;
 using AiAgent.Api.Domain.Chat.Enums;
 using AiAgent.Api.Infrastructure.CQRS.Interfaces;
 using AiAgent.Api.Infrastructure.CQRS.Services;
 
+using AiAgent.Api.Domain.StepCache.Services;
+
 namespace AiAgent.Api.Extensions;
 
 public static class ServiceCollectionExtensions
 {
+    static ServiceCollectionExtensions()
+    {
+        BsonSerializer.RegisterSerializer(new GuidSerializer(BsonType.String));
+    }
+
     public static IServiceCollection SetupServices(this IServiceCollection services)
     {
         services.AddMongo();
@@ -60,6 +70,7 @@ public static class ServiceCollectionExtensions
 
     private static IServiceCollection AddMongo(this IServiceCollection services)
     {
+
         services.AddSingleton<IMongoClient>(serviceProvider =>
         {
             var settings = serviceProvider.GetRequiredService<IOptions<MongoSettings>>().Value;

@@ -6,9 +6,9 @@ using AiAgent.Api.Domain.Knowledge.Commands;
 namespace AiAgent.Api.Domain.Knowledge.CommandHandlers;
 
 public class CreateKnowledgeCommandHandler(IKnowledgeRepository knowledgeRepository)
-    : ICommandHandler<CreateKnowledgeCommand, Guid>
+    : ICommandHandler<CreateKnowledgeCommand>
 {
-    public async Task<Guid> HandleAsync(CreateKnowledgeCommand command)
+    public async Task HandleAsync(CreateKnowledgeCommand command)
     {
         var knowledge = new KnowledgeEntity
         {
@@ -21,6 +21,5 @@ public class CreateKnowledgeCommandHandler(IKnowledgeRepository knowledgeReposit
             Updated = DateTime.UtcNow
         };
         await knowledgeRepository.InsertAsync(knowledge);
-        return knowledge.Id;
     }
 }

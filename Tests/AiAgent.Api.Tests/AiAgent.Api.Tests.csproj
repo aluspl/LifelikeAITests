@@ -30,7 +30,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AiAgent.Api\AiAgent.Api.csproj" />
+    <ProjectReference Include="..\..\AiAgent.Api\AiAgent.Api.csproj" />
   </ItemGroup>
 
 </Project>

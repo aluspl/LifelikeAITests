@@ -6,7 +6,6 @@ namespace AiAgent.Api.Domain.Database.Entites;
 public class BaseEntity
 {
     [BsonId]
-    [BsonRepresentation(BsonType.ObjectId)]
     public Guid Id { get; set; }
 
     [BsonElement("Created")]

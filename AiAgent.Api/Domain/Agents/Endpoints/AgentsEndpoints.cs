@@ -13,7 +13,7 @@ public static class AgentsEndpoints
 {
     public static void MapAgentsEndpoints(this IEndpointRouteBuilder routes)
     {
-        var group = routes.MapGroup("/api/agents");
+        var group = routes.MapGroup("/agents");
 
         group.MapGet("/", async (IMediator mediator) =>
         {
@@ -26,11 +26,7 @@ public static class AgentsEndpoints
         {
             var query = new GetAgentByIdQuery { Id = id };
             var agent = await mediator.QueryAsync(query);
-            if (agent == null)
-            {
-                return Results.NotFound();
-            }
-            return Results.Ok(agent);
+            return agent == null ? Results.NotFound() : Results.Ok(agent);
         })
         .WithName("GetAgentById");
 

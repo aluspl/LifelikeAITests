@@ -4,7 +4,7 @@ WORKDIR /src
 # Copy solution and project files
 COPY ["AiAgent.sln", "./"]
 COPY ["AiAgent.Api/AiAgent.Api.csproj", "AiAgent.Api/"]
-COPY ["AiAgent.Api.Tests/AiAgent.Api.Tests.csproj", "AiAgent.Api.Tests/"]
+
 
 # Copy everything else
 COPY . .
@@ -20,7 +20,7 @@ RUN dotnet publish "AiAgent.Api/AiAgent.Api.csproj" -c Release -o /app
 FROM mcr.microsoft.com/dotnet/aspnet:9.0
 WORKDIR /app
 COPY --from=publish /app .
-COPY AiAgent.Api/Domain/Instructions/ /app/Domain/Instructions/
+
 COPY Assets/ /app/Assets/
 EXPOSE 8080
 ENTRYPOINT ["dotnet", "AiAgent.Api.dll"]

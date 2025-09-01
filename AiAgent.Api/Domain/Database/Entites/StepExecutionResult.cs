@@ -1,5 +1,3 @@
-using System;
-
 namespace AiAgent.Api.Domain.Database.Entites
 {
     public class StepExecutionResult

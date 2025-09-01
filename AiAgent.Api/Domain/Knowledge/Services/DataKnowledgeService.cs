@@ -4,24 +4,11 @@ using AiAgent.Api.Domain.Database.Interfaces;
 using AiAgent.Api.Domain.Knowledge.Enums;
 using AiAgent.Api.Domain.Knowledge.Interfaces;
 using AiAgent.Api.Domain.Knowledge.Models;
-using System.IO;
-using System.Text;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using System.Linq;
-using System;
 
 namespace AiAgent.Api.Domain.Knowledge.Services;
 
-public class DataKnowledgeService : IDataKnowledgeService
+public class DataKnowledgeService(IKnowledgeRepository knowledgeRepository) : IDataKnowledgeService
 {
-    private readonly IKnowledgeRepository _knowledgeRepository;
-
-    public DataKnowledgeService(IKnowledgeRepository knowledgeRepository)
-    {
-        _knowledgeRepository = knowledgeRepository;
-    }
-
     public async Task<int> UploadKnowledgeDataAsync(Stream fileStream, string moduleString)
     {
         var count = 0;
@@ -66,7 +53,7 @@ public class DataKnowledgeService : IDataKnowledgeService
                 Created = DateTime.UtcNow,
                 Updated = DateTime.UtcNow
             };
-            await _knowledgeRepository.UpsertAsync(knowledgeEntity);
+            await knowledgeRepository.UpsertAsync(knowledgeEntity);
         }
 
         return count;
@@ -83,7 +70,7 @@ public class DataKnowledgeService : IDataKnowledgeService
             Created = DateTime.UtcNow,
             Updated = DateTime.UtcNow
         };
-        await _knowledgeRepository.UpsertAsync(knowledgeEntity);
+        await knowledgeRepository.UpsertAsync(knowledgeEntity);
     }
 
     public async Task PopulateKnowledgeFromDictionaryAsync(string key, string module, Dictionary<string, string> data)
@@ -99,7 +86,7 @@ public class DataKnowledgeService : IDataKnowledgeService
             Created = DateTime.UtcNow,
             Updated = DateTime.UtcNow
         };
-        await _knowledgeRepository.UpsertAsync(knowledgeEntity);
+        await knowledgeRepository.UpsertAsync(knowledgeEntity);
     }
 
     private class JsonlDto

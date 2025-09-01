@@ -1,5 +1,4 @@
 using MongoDB.Bson.Serialization.Attributes;
-using System.Collections.Generic;
 using AiAgent.Api.Domain.Knowledge.Enums;
 using AiAgent.Api.Domain.Knowledge.Models;
 

@@ -1,5 +1,7 @@
 using System.Text.Json.Serialization;
 
+namespace AiAgent.Api.Domain.AI.Models.Gemini;
+
 public class GeminiResponse
 {
     [JsonPropertyName("candidates")]

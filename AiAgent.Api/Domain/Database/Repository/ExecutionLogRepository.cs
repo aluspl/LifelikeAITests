@@ -4,10 +4,6 @@ using MongoDB.Driver;
 
 namespace AiAgent.Api.Domain.Database.Repository
 {
-    public class ExecutionLogRepository : Repository<ExecutionLogEntity>, IExecutionLogRepository
-    {
-        public ExecutionLogRepository(IMongoDatabase database) : base(database, "ExecutionLogs")
-        {
-        }
-    }
+    public class ExecutionLogRepository(IMongoDatabase database)
+        : Repository<ExecutionLogEntity>(database, "ExecutionLogs"), IExecutionLogRepository;
 }

@@ -7,7 +7,7 @@ public class BaseEntity
 {
     [BsonId]
     [BsonRepresentation(BsonType.ObjectId)]
-    public string Id { get; set; }
+    public Guid Id { get; set; }
 
     [BsonElement("Created")]
     public DateTime Created { get; set; }

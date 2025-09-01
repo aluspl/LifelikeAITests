@@ -1,6 +1,5 @@
 using AiAgent.Api.Domain.Chat.Enums;
 using MongoDB.Bson.Serialization.Attributes;
-using System.Collections.Generic;
 
 namespace AiAgent.Api.Domain.Database.Entites
 {
@@ -12,11 +11,11 @@ namespace AiAgent.Api.Domain.Database.Entites
         [BsonElement("name")]
         public string Name { get; set; }
 
-        [BsonElement("instructionId")]
-        public string InstructionId { get; set; }
+        [BsonElement("instruction")]
+        public string Instruction { get; set; }
 
         [BsonElement("knowledgeIds")]
-        public List<string> KnowledgeIds { get; set; } = new List<string>();
+        public List<Guid> KnowledgeIds { get; set; } = [];
 
         [BsonElement("modelProvider")]
         public AiProvider ModelProvider { get; set; }

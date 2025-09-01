@@ -4,10 +4,6 @@ using MongoDB.Driver;
 
 namespace AiAgent.Api.Domain.Database.Repository
 {
-    public class AgentStepRepository : Repository<AgentStepEntity>, IAgentStepRepository
-    {
-        public AgentStepRepository(IMongoDatabase database) : base(database, "AgentSteps")
-        {
-        }
-    }
+    public class AgentStepRepository(IMongoDatabase database)
+        : Repository<AgentStepEntity>(database, "AgentSteps"), IAgentStepRepository;
 }

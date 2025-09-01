@@ -4,12 +4,8 @@ using MongoDB.Driver;
 
 namespace AiAgent.Api.Domain.Database.Repository;
 
-public class ApiKeyRepository : Repository<ApiKey>, IApiKeyRepository
+public class ApiKeyRepository(IMongoDatabase database) : Repository<ApiKey>(database, "ApiKeys"), IApiKeyRepository
 {
-    public ApiKeyRepository(IMongoDatabase database) : base(database, "ApiKeys")
-    {
-    }
-
     public async Task<ApiKey> GetByKeyAsync(string key)
     {
         return await Collection.Find(x => x.Key == key).FirstOrDefaultAsync();

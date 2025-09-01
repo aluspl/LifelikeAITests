@@ -1,17 +1,12 @@
 using AiAgent.Api.Domain.Database.Entites;
 using AiAgent.Api.Domain.Database.Interfaces;
 using MongoDB.Driver;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace AiAgent.Api.Domain.Database.Repository;
 
-public class KnowledgeRepository : Repository<KnowledgeEntity>, IKnowledgeRepository
+public class KnowledgeRepository(IMongoDatabase database)
+    : Repository<KnowledgeEntity>(database, "Knowledge"), IKnowledgeRepository
 {
-    public KnowledgeRepository(IMongoDatabase database) : base(database, "Knowledge")
-    {
-    }
-
     public async Task<KnowledgeEntity> GetByKeyAndModuleAsync(string key, string module)
     {
         return await Collection.Find(x => x.Key == key && x.Module == module).FirstOrDefaultAsync();

@@ -1,6 +1,6 @@
 namespace AiAgent.Api.Domain.Common.Interfaces;
 
-public interface IDataSeederService
+public interface IDataSeederService : IService
 {
     Task SeedApiKeysAsync();
     Task SeedAllDataAsync();
